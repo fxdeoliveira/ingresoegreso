@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "ingreso-egreso-21d53": {
+      "hosting": {
+        "ingresoegresoApp": [
+          "ingreso-egreso-21d53"
+        ]
+      }
+    }
+  }
+}
