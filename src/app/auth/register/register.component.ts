@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2'
+import { Store } from '@ngrx/store';
+import { AppState } from 'src/app/app.reducer';
+import { Subscription } from 'rxjs';
+import * as action from '../../shared/ui.actions';
 
 @Component({
   selector: 'app-register',
@@ -10,13 +14,16 @@ import Swal from 'sweetalert2'
   styles: [
   ]
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, OnDestroy {
 
   registroForm: FormGroup;
+  cargando: boolean = false;
+  uiSubscription: Subscription;
 
   constructor(private fb: FormBuilder,
               private aService: AuthService,
-              private router: Router
+              private router: Router,
+              private store: Store<AppState>
     ) { 
    
   }
@@ -27,28 +34,40 @@ export class RegisterComponent implements OnInit {
       correo: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
+
+    this.uiSubscription = this.store.select('ui')
+    .subscribe(ui => this.cargando = ui.isLoading );
+  }
+
+  ngOnDestroy(){
+    this.uiSubscription.unsubscribe();
   }
 
   crearUsuario(){
     if(this.registroForm.invalid){return;}
+    this.store.dispatch(action.isLoading());
 
-    Swal.fire({
+   /*  Swal.fire({
       title: 'Cargando...',
       onBeforeOpen: () => {
         Swal.showLoading()    
       }
-    });  
+    });   */
 
     const {nombre, correo, password} = this.registroForm.value;
     this.aService.crearUsuario(nombre,correo,password)
     .then( credenciales => {
-      Swal.close();
+      /* Swal.close(); */
+      this.store.dispatch(action.isLoading());
       this.router.navigate(['/']);
-    }).catch(err=> Swal.fire({
+    }).catch(err=> {
+      this.store.dispatch(action.isLoading());
+      Swal.fire({
       icon: 'error',
       title: 'Oops...',
       text: err.message    
-    }));
+    })
+  });
   }
 
 }
