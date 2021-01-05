@@ -13,7 +13,7 @@ export class IngresoEgresoService {
 	constructor(private firestore: AngularFirestore, private authS: AuthService) {}
 
 	crearIngresoEgreso(ingresoEgreso: IngresoEgreso) {
-		console.log(this.authS.user.uid);
+		delete ingresoEgreso.uid;
 		return this.firestore
 			.doc(`${this.authS.user.uid}/ingresosegresos`)
 			.collection('items')
@@ -31,5 +31,10 @@ export class IngresoEgresoService {
 				});
 			})
 		);
+	}
+
+	borrarIE(uid: string) {
+		const uidu = this.authS.user.uid;
+		return this.firestore.doc(`${uidu}/ingresosegresos/items/${uid}`).delete();
 	}
 }
